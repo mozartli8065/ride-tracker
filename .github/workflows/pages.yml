@@ -1,8 +1,11 @@
+# Creating a Pages site needs administration:write as well as pages:write.
+# GITHUB_TOKEN only has pages:write, so configure-pages enablement returns
+# "Resource not accessible by integration" until an owner enables Pages
+# in Settings → Pages. Run this manually after choosing GitHub Actions
+# as the source. Publishing from the gh-pages branch does not need this workflow.
 name: Deploy GitHub Pages
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
