@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#14352c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="101K">
+<title>北海岸 101K</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  :root {
+    --ink: #1c2420;
+    --muted: #5c665f;
+    --paper: #f3f1ea;
+    --card: #fffcf7;
+    --line: #e4dfd4;
+    --ahead: #0c7a45;
+    --behind: #c5362b;
+    --ok: #0f4c5c;
+    --wait: #1f3d36;
+    --done: #1d4f91;
+    --gold: #e6b325;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font-family: "PingFang TC", "Noto Sans TC", "Heiti TC", "Microsoft JhengHei", "WenQuanYi Micro Hei", sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    -webkit-text-size-adjust: 100%;
+  }
+  button, input { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  #app {
+    height: 100dvh;
+    max-width: 520px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    background: var(--paper);
+  }
+  header {
+    padding: calc(10px + env(safe-area-inset-top)) 16px 8px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  header h1 { margin: 0; font-size: 20px; letter-spacing: -0.02em; }
+  header p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+  .chip {
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: #fff;
+    border: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  .chip.demo { background: #14352c; color: #fff; border-color: #14352c; }
+  #banner {
+    margin: 0 12px 8px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: #fff4e5;
+    color: #6a3b00;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+  main { flex: 1; overflow: auto; padding-bottom: 8px; }
+  .hero {
+    margin: 4px 12px 10px;
+    border-radius: 22px;
+    padding: 16px 18px 14px;
+    color: #fff;
+    background: var(--ok);
+  }
+  .hero.ahead { background: var(--ahead); }
+  .hero.behind { background: var(--behind); }
+  .hero.wait { background: var(--wait); }
+  .hero.done { background: var(--done); }
+  .hero.wait .big { font-size: clamp(40px, 12vw, 56px); letter-spacing: -0.03em; }
+  .hero .kicker { margin: 0; font-size: 15px; letter-spacing: 0.14em; opacity: 0.92; }
+  .hero .big {
+    margin: 0;
+    font-size: clamp(72px, 22vw, 104px);
+    line-height: 0.9;
+    font-weight: 720;
+    letter-spacing: -0.04em;
+    font-variant-numeric: tabular-nums;
+  }
+  .hero .unit { margin: 0; font-size: 18px; opacity: 0.92; }
+  .hero .km { margin: 8px 0 0; font-size: 22px; font-weight: 650; font-variant-numeric: tabular-nums; }
+  .track {
+    position: relative;
+    height: 10px;
+    margin: 0 16px 4px;
+    border-radius: 99px;
+    background: #ddd6c8;
+    overflow: hidden;
+  }
+  .track i, .track b {
+    position: absolute;
+    top: 0; bottom: 0; left: 0;
+    border-radius: 99px;
+  }
+  .track i { background: #b7c4b8; width: 0; }
+  .track b { background: #14352c; width: 0; }
+  .track-label {
+    display: flex;
+    justify-content: space-between;
+    margin: 0 16px 10px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 0 12px;
+  }
+  .stat, .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+  }
+  .stat { padding: 8px 12px 7px; }
+  .stat span, .card .label { color: var(--muted); font-size: 13px; }
+  .stat b {
+    display: block;
+    margin-top: 1px;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat em { font-style: normal; font-size: 13px; font-weight: 600; color: var(--muted); }
+  .card { margin: 8px 12px 0; padding: 12px 14px; }
+  .card h2 { margin: 0 0 4px; font-size: 20px; }
+  .card .row { display: flex; justify-content: space-between; gap: 8px; font-size: 16px; margin-top: 4px; }
+  .card .row b { font-variant-numeric: tabular-nums; }
+  .card.warn { border-color: #e7b4ae; background: #fff5f3; }
+  .card.bail { border-color: #e6c98a; background: #fff8e8; }
+  .card .note { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
+  .demobar {
+    margin: 8px 12px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 12px;
+    background: #14352c;
+    color: #fff;
+    font-size: 14px;
+  }
+  .demobar button, .btn, .scale button, nav button {
+    border: 0;
+    border-radius: 10px;
+    background: #fff;
+    color: var(--ink);
+    min-height: 40px;
+    padding: 8px 12px;
+  }
+  .demobar button { min-height: 36px; font-weight: 650; }
+  nav {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--line);
+    background: #fffcf7;
+  }
+  nav button { background: transparent; color: var(--muted); font-size: 14px; min-height: 44px; }
+  nav button.on { color: var(--ink); font-weight: 750; background: #efeae0; }
+  .list { padding: 4px 12px 16px; }
+  .stop {
+    display: grid;
+    grid-template-columns: 72px 1fr auto;
+    gap: 8px;
+    align-items: center;
+    padding: 10px 4px;
+    border-bottom: 1px solid var(--line);
+  }
+  .stop .when { font-variant-numeric: tabular-nums; font-weight: 700; }
+  .stop .km { color: var(--muted); font-size: 13px; text-align: right; }
+  .stop.next { background: #e7f5ee; border-radius: 10px; padding: 10px 8px; }
+  .stop.passed { opacity: 0.55; }
+  .set { padding: 4px 12px 24px; display: flex; flex-direction: column; gap: 10px; }
+  .set label { display: flex; flex-direction: column; gap: 4px; font-size: 14px; color: var(--muted); }
+  .set input[type="date"], .set input[type="time"], .set input[type="range"] {
+    font-size: 18px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: #fff;
+  }
+  .set input[type="range"] { padding: 0; }
+  .rowbtns { display: flex; flex-wrap: wrap; gap: 8px; }
+  .btn.primary { background: #14352c; color: #fff; font-weight: 700; }
+  .btn.ghost { background: #fff; border: 1px solid var(--line); }
+  .check { flex-direction: row !important; align-items: center; gap: 8px !important; color: var(--ink) !important; font-size: 16px !important; }
+  .scale { display: flex; gap: 6px; }
+  .scale button.on { background: #14352c; color: #fff; }
+  .help { font-size: 14px; line-height: 1.5; color: var(--muted); margin: 0; }
+  #mapbox { height: calc(100dvh - 150px); min-height: 280px; margin: 0 12px 12px; border-radius: 16px; overflow: hidden; background: #d9d3c7; }
+  .map-fail { padding: 16px; line-height: 1.5; }
+  #toast {
+    position: fixed;
+    left: 50%;
+    bottom: calc(78px + env(safe-area-inset-bottom));
+    transform: translateX(-50%);
+    background: #14352c;
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 999px;
+    font-size: 14px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    max-width: 90vw;
+  }
+  #toast.on { opacity: 1; }
+  #selftest {
+    margin: 12px;
+    padding: 12px;
+    background: #111;
+    color: #d6ffd8;
+    font: 12px/1.45 ui-monospace, monospace;
+    white-space: pre-wrap;
+    border-radius: 12px;
+  }
+  .leaflet-container { font-family: inherit; height: 100%; width: 100%; background: #d9d3c7; }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div>
+      <h1>北海岸 101K</h1>
+      <p id="clockLine">11/22 週日</p>
+    </div>
+    <div class="chips">
+      <span class="chip" id="chipMode">實騎</span>
+      <span class="chip" id="chipAcc">定位…</span>
+      <span class="chip" id="chipWake">螢幕</span>
+    </div>
+  </header>
+  <div id="banner" hidden></div>
+  <main>
+    <section id="view-dash">
+      <div class="hero ok" id="hero">
+        <p class="kicker" id="heroKicker">準時</p>
+        <p class="big" id="heroBig">0</p>
+        <p class="unit" id="heroUnit">分鐘</p>
+        <p class="km" id="heroKm">跟計畫差不多</p>
+      </div>
+      <div class="track" aria-hidden="true"><i id="barPlan"></i><b id="barActual"></b></div>
+      <div class="track-label"><span id="barText">0 / 101 km</span><span>深色是已騎，淺色是計畫</span></div>
+      <div class="stats">
+        <div class="stat"><span>已騎</span><b id="statDone">0.0 <em>km</em></b></div>
+        <div class="stat"><span>剩餘</span><b id="statLeft">101 <em>km</em></b></div>
+        <div class="stat"><span>現在速度</span><b id="statSpeed">0.0 <em>km/h</em></b></div>
+        <div class="stat"><span>移動均速</span><b id="statAvg">— <em>km/h</em></b></div>
+        <div class="stat"><span>計畫里程</span><b id="statPlan">0.0 <em>km</em></b></div>
+        <div class="stat"><span>定位精度</span><b id="statAcc">—</b></div>
+      </div>
+      <article class="card" id="nextCard">
+        <div class="label">下一站</div>
+        <h2 id="nextName">關渡</h2>
+        <div class="row"><span>計畫到達</span><b id="nextPlan">—</b></div>
+        <div class="row"><span>依目前速度</span><b id="nextEta">—</b></div>
+        <p class="note" id="nextNote"></p>
+      </article>
+      <article class="card" id="finishCard">
+        <div class="label">預計回到大稻埕</div>
+        <h2 id="finishTime">—</h2>
+        <p class="note" id="finishNote">計畫 15:56 · 安全線 16:30</p>
+      </article>
+      <article class="card bail" id="bailCard" hidden>
+        <div class="label">收車點</div>
+        <h2>紅樹林站</h2>
+        <p class="note" id="bailText"></p>
+      </article>
+      <div class="demobar" id="demoBar" hidden>
+        <span id="demoText">示範</span>
+        <button type="button" id="demoPause">暫停</button>
+      </div>
+    </section>
+    <section id="view-plan" hidden>
+      <div class="list" id="planList"></div>
+    </section>
+    <section id="view-map" hidden>
+      <p class="help" style="padding: 0 16px 8px;">圖磚載不出來也沒關係，里程在儀表頁。</p>
+      <div id="mapbox"></div>
+    </section>
+    <section id="view-set" hidden>
+      <form class="set" id="setForm">
+        <label>出發日期（台北時間）
+          <input type="date" id="setDate" value="2026-11-22">
+        </label>
+        <label>出發時間
+          <input type="time" id="setTime" value="08:00">
+        </label>
+        <div class="rowbtns">
+          <button type="button" class="btn primary" id="btnStartNow">我現在出發</button>
+        </div>
+        <label class="check"><input type="checkbox" id="setRests" checked> 計入計畫休息（淡水 10 分、白沙灣 10 分、草里午餐 90 分）</label>
+        <label class="check"><input type="checkbox" id="setCoffee"> 回程淺水灣咖啡 30 分（預設不加；加上後約 16:20 回到碼頭）</label>
+        <label class="check"><input type="checkbox" id="setDemo"> 示範模式（沿路線假定位）</label>
+        <label>示範速度 <b id="speedLabel">18 km/h</b>
+          <input type="range" id="setSpeed" min="8" max="36" step="0.5" value="18">
+        </label>
+        <div class="scale" id="scaleBtns">
+          <button type="button" data-scale="1">1×</button>
+          <button type="button" data-scale="30">30×</button>
+          <button type="button" data-scale="120" class="on">120×</button>
+          <button type="button" data-scale="600">600×</button>
+        </div>
+        <label class="check"><input type="checkbox" id="setHold" checked> 示範經過休息站時也停下</label>
+        <div class="rowbtns">
+          <button type="button" class="btn ghost" id="btnRewind">示範重頭</button>
+          <button type="button" class="btn ghost" id="btnTurn">我已折返</button>
+          <button type="button" class="btn ghost" id="btnAlign">我在路線上</button>
+          <button type="button" class="btn ghost" id="btnReset">清除里程</button>
+        </div>
+        <label class="check"><input type="checkbox" id="setWake" checked> 盡量保持螢幕常亮</label>
+        <p class="help" id="routeBlurb"></p>
+        <p class="help">iPhone：用 Safari 打開這個 https 網址，分享按鈕 → 加入主畫面。加過之後，訊號差也能開。</p>
+        <p class="help">定位只在 HTTPS 或本機網址會動。若按了不允許，到系統設定把 Safari（或 Chrome）的定位改成允許，再重新整理。</p>
+      </form>
+    </section>
+  </main>
+  <nav>
+    <button type="button" data-view="dash" class="on">儀表</button>
+    <button type="button" data-view="plan">時刻</button>
+    <button type="button" data-view="map">地圖</button>
+    <button type="button" data-view="set">設定</button>
+  </nav>
+</div>
+<div id="toast" role="status"></div>
+<pre id="selftest" hidden></pre>
+<script src="engine.js"></script>
+<script src="route.js"></script>
+<script>
+(function () {
+  "use strict";
+  var KEY = "nc101k.v2";
+  var params = new URLSearchParams(location.search);
+  var ride = RideEngine.createRide(ROUTE_DATA.ROUTE_LL, ROUTE_DATA.DEFS, {
+    startMs: RideEngine.DEFAULT_START,
+    includeRests: true,
+    coffeeStop: false
+  });
+  var state = {
+    m: 0,
+    turned: false,
+    off: false,
+    cross: 0,
+    speedKmh: 0,
+    movingMs: 0,
+    accuracy: null,
+    gps: "wait",
+    demo: false,
+    paused: false,
+    simKmh: 18,
+    scale: 120,
+    virtualNow: null,
+    holdRests: true,
+    coffee: false,
+    wantWake: true,
+    wake: "off",
+    view: "dash",
+    lastLat: null,
+    lastLng: null,
+    lastFixMs: 0,
+    rested: {},
+    restUntil: 0
+  };
+  var watchId = null;
+  var mapApi = null;
+  var persistTimer = 0;
+  var toastTimer = 0;
+
+  function $(id) { return document.getElementById(id); }
+
+  function taipeiParts(ms) {
+    var fmt = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Taipei",
+      year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", hourCycle: "h23"
+    });
+    var o = {};
+    fmt.formatToParts(ms).forEach(function (p) { o[p.type] = p.value; });
+    return o;
+  }
+
+  function fmtTime(ms) {
+    return new Intl.DateTimeFormat("zh-TW", {
+      timeZone: "Asia/Taipei",
+      hour: "2-digit", minute: "2-digit", hourCycle: "h23"
+    }).format(ms);
+  }
+
+  function fmtClock(ms) {
+    return new Intl.DateTimeFormat("zh-TW", {
+      timeZone: "Asia/Taipei",
+      month: "numeric", day: "numeric", weekday: "short",
+      hour: "2-digit", minute: "2-digit", hourCycle: "h23"
+    }).format(ms);
+  }
+
+  function fmtDur(ms) {
+    var s = Math.max(0, Math.round(ms / 1000));
+    var d = Math.floor(s / 86400);
+    var h = Math.floor((s % 86400) / 3600);
+    var m = Math.floor((s % 3600) / 60);
+    if (d > 0) return d + " 天 " + h + " 小時";
+    if (h > 0) return h + " 小時 " + (m < 10 ? "0" : "") + m + " 分";
+    return m + " 分";
+  }
+
+  function km(m) { return (m / 1000).toFixed(1); }
+
+  function nowMs() {
+    if (state.demo && state.virtualNow != null) return state.virtualNow;
+    return Date.now();
+  }
+
+  function toast(text) {
+    var el = $("toast");
+    el.textContent = text;
+    el.classList.add("on");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.classList.remove("on"); }, 2200);
+  }
+
+  function applyStartFromForm() {
+    var date = $("setDate").value;
+    var time = $("setTime").value || "08:00";
+    if (!date) return;
+    var dp = date.split("-");
+    var tp = time.split(":");
+    ride.startMs = RideEngine.taipeiMs(+dp[0], +dp[1], +dp[2], +tp[0], +tp[1] || 0);
+    persist();
+    render();
+  }
+
+  function syncForm() {
+    var p = taipeiParts(ride.startMs);
+    $("setDate").value = p.year + "-" + p.month + "-" + p.day;
+    $("setTime").value = p.hour + ":" + p.minute;
+    $("setRests").checked = ride.includeRests;
+    $("setCoffee").checked = ride.coffeeStop;
+    $("setDemo").checked = state.demo;
+    $("setSpeed").value = String(state.simKmh);
+    $("speedLabel").textContent = state.simKmh.toFixed(1).replace(/\.0$/, "") + " km/h";
+    $("setHold").checked = state.holdRests;
+    $("setWake").checked = state.wantWake;
+    document.querySelectorAll("#scaleBtns button").forEach(function (b) {
+      b.classList.toggle("on", Number(b.dataset.scale) === state.scale);
+    });
+  }
+
+  function paceInfo() {
+    if (state.speedKmh >= 5) return { kmh: state.speedKmh, src: "" };
+    var avg = avgKmh();
+    if (avg >= 5) return { kmh: avg, src: "用移動均速" };
+    return { kmh: ride.planKmh, src: "用計畫配速 " + ride.planKmh };
+  }
+
+  function avgKmh() {
+    if (state.movingMs > 20000 && state.m > 200) {
+      return (state.m / 1000) / (state.movingMs / 3600000);
+    }
+    return 0;
+  }
+
+  function render() {
+    var now = nowMs();
+    var verdict = ride.ahead(state.m, now);
+    var planned = verdict.planned;
+    var waiting = !state.demo && now < ride.startMs - 15000 && state.m < 250;
+    var done = state.m >= ride.totalM - 50;
+    var hero = $("hero");
+    hero.className = "hero";
+    if (done) {
+      hero.classList.add("done");
+      $("heroKicker").textContent = "已完成";
+      $("heroBig").textContent = fmtTime(now);
+      $("heroUnit").textContent = "回到碼頭";
+      $("heroKm").textContent = "全程 " + km(ride.totalM) + " km";
+    } else if (waiting) {
+      hero.classList.add("wait");
+      $("heroKicker").textContent = "尚未出發";
+      $("heroBig").textContent = fmtDur(ride.startMs - now);
+      $("heroUnit").textContent = "後出發";
+      $("heroKm").textContent = "台北時間 " + fmtTime(ride.startMs);
+    } else if (Math.abs(verdict.min) < 0.5) {
+      hero.classList.add("ok");
+      $("heroKicker").textContent = "準時";
+      $("heroBig").textContent = "0";
+      $("heroUnit").textContent = "分鐘";
+      $("heroKm").textContent = "跟計畫差不多";
+    } else if (verdict.min > 0) {
+      hero.classList.add("ahead");
+      $("heroKicker").textContent = "超前";
+      $("heroBig").textContent = String(Math.round(verdict.min));
+      $("heroUnit").textContent = "分鐘";
+      $("heroKm").textContent = "＋" + (verdict.meters / 1000).toFixed(1) + " 公里";
+    } else {
+      hero.classList.add("behind");
+      $("heroKicker").textContent = "落後";
+      $("heroBig").textContent = String(Math.round(-verdict.min));
+      $("heroUnit").textContent = "分鐘";
+      $("heroKm").textContent = "－" + (Math.abs(verdict.meters) / 1000).toFixed(1) + " 公里";
+    }
+
+    var total = ride.totalM || 1;
+    $("barActual").style.width = Math.min(100, (state.m / total) * 100) + "%";
+    $("barPlan").style.width = Math.min(100, (planned / total) * 100) + "%";
+    $("barText").textContent = km(state.m) + " / " + km(ride.totalM) + " km";
+    $("statDone").innerHTML = km(state.m) + " <em>km</em>";
+    $("statLeft").innerHTML = km(Math.max(0, ride.totalM - state.m)) + " <em>km</em>";
+    $("statSpeed").innerHTML = state.speedKmh.toFixed(1) + " <em>km/h</em>";
+    var avg = avgKmh();
+    $("statAvg").innerHTML = (avg ? avg.toFixed(1) : "—") + " <em>km/h</em>";
+    $("statPlan").innerHTML = km(planned) + " <em>km</em>";
+    $("statAcc").textContent = state.accuracy == null ? "—" : "±" + Math.round(state.accuracy) + " m";
+
+    var list = ride.timed();
+    var next = null;
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].m > state.m + 70) { next = list[i]; break; }
+    }
+    var pace = paceInfo();
+    if (!next) {
+      $("nextName").textContent = "終點";
+      $("nextPlan").textContent = fmtTime(ride.finishMs);
+      $("nextEta").textContent = "已到";
+      $("nextNote").textContent = "";
+    } else {
+      $("nextName").textContent = next.name;
+      $("nextPlan").textContent = fmtTime(next.arrive);
+      var eta = now + ((next.m - state.m) / 1000 / pace.kmh) * 3600000;
+      $("nextEta").textContent = fmtTime(eta);
+      var bits = [];
+      if (next.note) bits.push(next.note + (next.restMin ? " " + next.restMin + " 分" : ""));
+      if (pace.src) bits.push(pace.src);
+      $("nextNote").textContent = bits.join(" · ");
+    }
+
+    var proj = ride.projectFinish(state.m, now, pace.kmh);
+    var safe = ride.safetyMs();
+    var late = !done && proj.finish > safe + 30000;
+    $("finishTime").textContent = done ? fmtTime(now) : fmtTime(proj.finish);
+    var finishBits = "計畫 " + fmtTime(ride.finishMs) + " · 安全線 " + fmtTime(safe) + " · 日落 " + fmtTime(ride.sunsetMs());
+    if (proj.restMin > 0) finishBits += " · 含尚未休息 " + proj.restMin + " 分";
+    if (pace.src) finishBits += " · " + pace.src;
+    $("finishNote").textContent = late ? "已超過 16:30 安全線。 " + finishBits : finishBits;
+    $("finishCard").classList.toggle("warn", late);
+
+    var bail = null;
+    list.forEach(function (c) { if (c.bailout && c.leg === "back") bail = c; });
+    var showBail = late && bail && state.m < bail.m - 80;
+    $("bailCard").hidden = !showBail;
+    if (showBail) {
+      var leftKm = (bail.m - state.m) / 1000;
+      $("bailText").textContent = "若不想在天黑後還在台2，回程到紅樹林站還有 " +
+        leftKm.toFixed(1) + " km，可在那裡收車搭捷運淡水線回市區。計畫通過時間 " + fmtTime(bail.arrive) + "。";
+    }
+
+    $("clockLine").textContent = (state.demo ? "示範 " : "") + fmtClock(now);
+    $("chipMode").textContent = state.demo ? (state.paused ? "示範暫停" : "示範") : "實騎";
+    $("chipMode").classList.toggle("demo", state.demo);
+    var accText = state.gps === "denied" ? "未允許" :
+      state.gps === "insecure" ? "需 HTTPS" :
+      state.gps === "timeout" ? "搜尋中" :
+      state.gps === "unavail" ? "無定位" :
+      state.accuracy == null ? "定位…" : "±" + Math.round(state.accuracy) + " m";
+    $("chipAcc").textContent = accText;
+    $("chipWake").textContent = state.wake === "on" ? "螢幕常亮" : (state.wake === "no" ? "無法常亮" : "螢幕");
+
+    var banner = "";
+    if (!state.demo && state.gps === "insecure") {
+      banner = "這頁不是 HTTPS，手機瀏覽器不會給定位。請用 https 網址打開，或先開示範模式把行程跑一遍。";
+    } else if (!state.demo && state.gps === "denied") {
+      banner = "定位被拒絕。iPhone：設定 → Safari → 定位資訊 → 允許。Android：網址列鎖頭 → 權限 → 位置。改完再重新整理。";
+    } else if (!state.demo && state.gps === "timeout") {
+      banner = "還沒拿到定位。走到空曠處，並確認手機的定位服務有開。";
+    } else if (!state.demo && state.gps === "unavail") {
+      banner = "這個瀏覽器沒有提供定位。可以改用 Safari 或 Chrome，或先開示範模式。";
+    } else if (!state.demo && state.off && state.cross > 75) {
+      banner = "偏離路線約 " + Math.round(state.cross) + " 公尺，里程先不往前加。回到車道上就會自己接上。";
+    } else if (!state.demo && state.gps === "ok" && state.accuracy > 45) {
+      banner = "定位誤差約 " + Math.round(state.accuracy) + " 公尺，數字會抖一些。";
+    }
+    var bEl = $("banner");
+    bEl.hidden = !banner;
+    bEl.textContent = banner;
+
+    $("demoBar").hidden = !state.demo;
+    $("demoText").textContent = "示範 " + state.simKmh.toFixed(0) + " km/h · " + state.scale + "×" +
+      (state.paused ? " · 暫停" : "");
+    $("demoPause").textContent = state.paused ? "繼續" : "暫停";
+
+    if (state.view === "plan") renderPlan();
+    if (mapApi && mapApi.marker) {
+      var here = ride.pointAt(state.m);
+      mapApi.marker.setLatLng([here.lat, here.lng]);
+    }
+  }
+
+  function renderPlan() {
+    var list = ride.timed();
+    var html = "";
+    html += "<p class='help' style='padding:8px 4px'>出發 " + fmtTime(ride.startMs) +
+      " · 預計回到 " + fmtTime(ride.finishMs) +
+      " · 安全線 " + fmtTime(ride.safetyMs()) +
+      (ride.includeRests ? " · 含休息" : " · 不含休息") + "</p>";
+    list.forEach(function (c) {
+      var passed = state.m > c.m + 70;
+      var isNext = !passed && c.m > state.m;
+      var cls = passed ? "stop passed" : "stop";
+      if (!passed && (!html.includes("stop next")) && c.m > state.m + 70) cls = "stop next";
+      var when = fmtTime(c.arrive);
+      if (c.restMin) when += "–" + fmtTime(c.depart);
+      html += "<div class='" + cls + "'><div class='when'>" + when + "</div><div><b>" + c.name + "</b>" +
+        (c.note ? "<div class='km'>" + c.note + "</div>" : "") + "</div><div class='km'>" +
+        km(c.m) + " km</div></div>";
+    });
+    $("planList").innerHTML = html;
+  }
+
+  function setView(name) {
+    state.view = name;
+    ["dash", "plan", "map", "set"].forEach(function (v) {
+      $("view-" + v).hidden = v !== name;
+    });
+    document.querySelectorAll("nav button").forEach(function (b) {
+      b.classList.toggle("on", b.dataset.view === name);
+    });
+    if (name === "map") ensureMap();
+    if (name === "set") syncForm();
+    render();
+  }
+
+  function persist() {
+    var data = {
+      startMs: ride.startMs,
+      includeRests: ride.includeRests,
+      coffeeStop: ride.coffeeStop,
+      m: state.m,
+      turned: state.turned,
+      movingMs: state.movingMs,
+      demo: state.demo,
+      paused: state.paused,
+      simKmh: state.simKmh,
+      scale: state.scale,
+      virtualNow: state.virtualNow,
+      holdRests: state.holdRests,
+      wantWake: state.wantWake,
+      rested: state.rested,
+      restUntil: state.restUntil
+    };
+    try { localStorage.setItem(KEY, JSON.stringify(data)); } catch (e) {}
+  }
+
+  function persistSoon() {
+    clearTimeout(persistTimer);
+    persistTimer = setTimeout(persist, 800);
+  }
+
+  function load() {
+    if (params.has("fresh")) return;
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (!raw) return;
+      var s = JSON.parse(raw);
+      if (s.startMs) ride.startMs = s.startMs;
+      if (typeof s.includeRests === "boolean") ride.includeRests = s.includeRests;
+      if (typeof s.coffeeStop === "boolean") ride.coffeeStop = s.coffeeStop;
+      if (typeof s.m === "number") state.m = s.m;
+      if (s.turned) state.turned = true;
+      if (s.movingMs) state.movingMs = s.movingMs;
+      if (s.demo) state.demo = true;
+      if (s.paused) state.paused = true;
+      if (s.simKmh) state.simKmh = s.simKmh;
+      if (s.scale) state.scale = s.scale;
+      if (s.virtualNow) state.virtualNow = s.virtualNow;
+      if (typeof s.holdRests === "boolean") state.holdRests = s.holdRests;
+      if (typeof s.wantWake === "boolean") state.wantWake = s.wantWake;
+      if (s.rested) state.rested = s.rested;
+      if (s.restUntil) state.restUntil = s.restUntil;
+    } catch (e) {}
+  }
+
+  function applyShot() {
+    state.demo = true;
+    state.paused = true;
+    state.m = 22000;
+    state.turned = false;
+    state.speedKmh = 22.4;
+    state.movingMs = (22 / 19.6) * 3600000;
+    state.accuracy = 6;
+    state.gps = "demo";
+    state.simKmh = 22;
+    state.virtualNow = ride.earliestMs(19800);
+    var p = ride.pointAt(state.m);
+    state.lastLat = p.lat;
+    state.lastLng = p.lng;
+  }
+
+  function secureEnough() {
+    return window.isSecureContext || location.hostname === "localhost" || location.hostname === "127.0.0.1";
+  }
+
+  function startGps() {
+    if (state.demo) return;
+    if (!secureEnough()) {
+      state.gps = "insecure";
+      render();
+      return;
+    }
+    if (!navigator.geolocation) {
+      state.gps = "unavail";
+      render();
+      return;
+    }
+    if (watchId != null) navigator.geolocation.clearWatch(watchId);
+    watchId = navigator.geolocation.watchPosition(onFix, onErr, {
+      enableHighAccuracy: true,
+      maximumAge: 1000,
+      timeout: 12000
+    });
+  }
+
+  function onFix(pos) {
+    var c = pos.coords;
+    state.lastLat = c.latitude;
+    state.lastLng = c.longitude;
+    state.accuracy = c.accuracy;
+    var snapped = ride.snap(c.latitude, c.longitude, { m: state.m, turned: state.turned });
+    var dt = state.lastFixMs ? (pos.timestamp - state.lastFixMs) / 1000 : 0;
+    state.lastFixMs = pos.timestamp || Date.now();
+    var kmh = (c.speed == null || c.speed < 0) ? null : c.speed * 3.6;
+    if (kmh == null && dt > 0.4 && dt < 15 && !snapped.off) {
+      kmh = Math.abs(snapped.m - state.m) / dt * 3.6;
+    }
+    if (kmh != null && isFinite(kmh)) state.speedKmh = state.speedKmh * 0.35 + kmh * 0.65;
+    if (!snapped.off) {
+      if (dt > 0.3 && dt < 20 && state.speedKmh >= 1.5) state.movingMs += dt * 1000;
+      state.m = snapped.m;
+      state.turned = snapped.turned;
+      state.off = false;
+    } else {
+      state.off = true;
+    }
+    state.cross = snapped.cross;
+    state.gps = "ok";
+    render();
+    persistSoon();
+  }
+
+  function onErr(err) {
+    if (err && err.code === 1) state.gps = "denied";
+    else if (err && err.code === 3) state.gps = "timeout";
+    else state.gps = "unavail";
+    render();
+  }
+
+  function inRest() {
+    if (!state.demo || !ride.includeRests || !state.holdRests) return false;
+    if (state.restUntil && state.virtualNow < state.restUntil) {
+      state.speedKmh = 0;
+      return true;
+    }
+    state.restUntil = 0;
+    var list = ride.timed();
+    for (var i = 0; i < list.length; i++) {
+      var c = list[i];
+      if (c.restMin > 0 && !state.rested[c.id] && state.m >= c.m - 25) {
+        state.rested[c.id] = true;
+        state.restUntil = state.virtualNow + c.restMin * 60000;
+        state.speedKmh = 0;
+        return true;
+      }
+    }
+    return false;
+  }
+
+  var lastTick = 0;
+  function tick(ts) {
+    requestAnimationFrame(tick);
+    if (!lastTick) lastTick = ts;
+    var realDt = Math.min(0.25, (ts - lastTick) / 1000);
+    lastTick = ts;
+    if (state.demo && !state.paused) {
+      var virt = realDt * state.scale;
+      state.virtualNow += virt * 1000;
+      if (!inRest()) {
+        var left = state.simKmh * (virt / 3600) * 1000;
+        while (left > 0.4 && state.m < ride.totalM - 1) {
+          var step = Math.min(30, left, ride.totalM - state.m);
+          left -= step;
+          var target = state.m + step;
+          var pos = ride.pointAt(target);
+          var snapped = ride.snap(pos.lat, pos.lng, { m: state.m, turned: state.turned });
+          state.lastLat = pos.lat;
+          state.lastLng = pos.lng;
+          if (!snapped.off) {
+            state.m = snapped.m;
+            state.turned = snapped.turned;
+            state.off = false;
+          }
+          state.cross = snapped.cross;
+          if (inRest()) break;
+        }
+        state.speedKmh = state.simKmh;
+        if (state.simKmh >= 1.5) state.movingMs += virt * 1000;
+      }
+      state.accuracy = 5;
+      state.gps = "demo";
+      if (state.m >= ride.totalM - 20) {
+        state.m = ride.totalM;
+        state.paused = true;
+        state.speedKmh = 0;
+        toast("示範跑完全程");
+      }
+      persistSoon();
+    }
+    render();
+  }
+
+  function ensureMap() {
+    var box = $("mapbox");
+    if (mapApi) {
+      setTimeout(function () { mapApi.map.invalidateSize(); }, 50);
+      return;
+    }
+    if (box.dataset.loading) return;
+    box.dataset.loading = "1";
+    loadLeaflet().then(function (L) {
+      var map = L.map(box, { zoomControl: true, attributionControl: true });
+      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 18,
+        attribution: "&copy; OpenStreetMap"
+      }).addTo(map);
+      var line = ride.points.map(function (p) { return [p.lat, p.lng]; });
+      var poly = L.polyline(line, { color: "#0f6e56", weight: 4, opacity: 0.9 }).addTo(map);
+      ride.timed().forEach(function (c) {
+        if (c.leg === "back" && c.id !== "finish") return;
+        var p = ride.pointAt(c.m);
+        L.circleMarker([p.lat, p.lng], {
+          radius: 5, color: "#14352c", weight: 2, fillColor: "#f4d35e", fillOpacity: 1
+        }).bindTooltip(c.name + " " + fmtTime(c.arrive), { direction: "top" }).addTo(map);
+      });
+      var here = ride.pointAt(state.m);
+      var marker = L.circleMarker([here.lat, here.lng], {
+        radius: 8, color: "#fff", weight: 3, fillColor: "#e23d3d", fillOpacity: 1
+      }).addTo(map);
+      map.fitBounds(poly.getBounds(), { padding: [18, 18] });
+      mapApi = { map: map, marker: marker };
+      setTimeout(function () { map.invalidateSize(); }, 80);
+    }).catch(function () {
+      box.innerHTML = "<p class='map-fail'>地圖圖磚或程式載入失敗。儀表上的里程、超前落後照算，不受影響。</p>";
+    });
+  }
+
+  function loadLeaflet() {
+    return new Promise(function (resolve, reject) {
+      if (window.L) return resolve(window.L);
+      var css = document.createElement("link");
+      css.rel = "stylesheet";
+      css.href = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css";
+      document.head.appendChild(css);
+      var s = document.createElement("script");
+      s.src = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js";
+      s.onload = function () { window.L ? resolve(window.L) : reject(new Error("no L")); };
+      s.onerror = function () { reject(new Error("leaflet")); };
+      document.head.appendChild(s);
+      setTimeout(function () { if (!window.L) reject(new Error("timeout")); }, 8000);
+    });
+  }
+
+  function requestWake() {
+    if (!state.wantWake) { state.wake = "off"; return; }
+    if (!("wakeLock" in navigator)) { state.wake = "no"; return; }
+    navigator.wakeLock.request("screen").then(function (sentinel) {
+      state.wake = "on";
+      sentinel.addEventListener("release", function () {
+        if (state.wake === "on") state.wake = "off";
+        render();
+      });
+      render();
+    }).catch(function () {
+      state.wake = "no";
+      render();
+    });
+  }
+
+  function setDemo(on) {
+    state.demo = on;
+    if (on) {
+      if (watchId != null && navigator.geolocation) {
+        navigator.geolocation.clearWatch(watchId);
+        watchId = null;
+      }
+      if (state.virtualNow == null) state.virtualNow = ride.earliestMs(state.m);
+      state.gps = "demo";
+      state.accuracy = 5;
+      state.paused = false;
+    } else {
+      state.paused = false;
+      state.gps = "wait";
+      startGps();
+    }
+    persist();
+    render();
+  }
+
+  $("routeBlurb").textContent =
+    "路線沿淡水河右岸與台2到石門草里再原路回來，約 " + km(ride.turnM) +
+    " km 單程、" + km(ride.totalM) +
+    " km 來回。11/22（日）08:00 出發，去程約 16 km/h、回程約 18 km/h。淡水站與白沙灣各停 10 分，草里 11:30 到、13:00 走，預計 " +
+    fmtTime(ride.finishMs) + " 回到碼頭。回程咖啡預設不加。16:30 安全線，日落 17:04。改出發時間會整表平移。";
+
+  document.querySelectorAll("nav button").forEach(function (b) {
+    b.addEventListener("click", function () { setView(b.dataset.view); });
+  });
+  $("setDate").addEventListener("change", applyStartFromForm);
+  $("setTime").addEventListener("change", applyStartFromForm);
+  $("setRests").addEventListener("change", function () {
+    ride.includeRests = $("setRests").checked;
+    persist();
+    render();
+  });
+  $("setCoffee").addEventListener("change", function () {
+    ride.coffeeStop = $("setCoffee").checked;
+    persist();
+    render();
+  });
+  $("setDemo").addEventListener("change", function () { setDemo($("setDemo").checked); });
+  $("setSpeed").addEventListener("input", function () {
+    state.simKmh = Number($("setSpeed").value);
+    $("speedLabel").textContent = state.simKmh.toFixed(1).replace(/\.0$/, "") + " km/h";
+    if (state.demo && !state.paused) state.speedKmh = state.simKmh;
+    persistSoon();
+    render();
+  });
+  $("setHold").addEventListener("change", function () {
+    state.holdRests = $("setHold").checked;
+    persist();
+  });
+  $("setWake").addEventListener("change", function () {
+    state.wantWake = $("setWake").checked;
+    if (state.wantWake) requestWake();
+    else state.wake = "off";
+    persist();
+    render();
+  });
+  document.querySelectorAll("#scaleBtns button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      state.scale = Number(b.dataset.scale);
+      syncForm();
+      persist();
+      render();
+    });
+  });
+  $("btnStartNow").addEventListener("click", function () {
+    var now = state.demo && state.virtualNow ? state.virtualNow : Date.now();
+    var p = taipeiParts(now);
+    ride.startMs = RideEngine.taipeiMs(+p.year, +p.month, +p.day, +p.hour, +p.minute);
+    syncForm();
+    toast("出發改成現在，整份時刻一起平移");
+    persist();
+    render();
+  });
+  $("btnRewind").addEventListener("click", function () {
+    state.demo = true;
+    state.paused = false;
+    state.m = 0;
+    state.turned = false;
+    state.movingMs = 0;
+    state.speedKmh = state.simKmh;
+    state.virtualNow = ride.startMs;
+    state.rested = {};
+    state.restUntil = 0;
+    state.gps = "demo";
+    state.accuracy = 5;
+    $("setDemo").checked = true;
+    if (watchId != null && navigator.geolocation) {
+      navigator.geolocation.clearWatch(watchId);
+      watchId = null;
+    }
+    toast("示範從碼頭重新出發");
+    setView("dash");
+    persist();
+  });
+  $("btnTurn").addEventListener("click", function () {
+    if (state.m >= ride.turnM - 30) { toast("已經在回程"); return; }
+    var m2 = ride.mirror(state.m);
+    if (m2 == null) { toast("再騎出去一點再折返"); return; }
+    state.m = m2;
+    state.turned = true;
+    toast("已切到回程 " + km(state.m) + " km");
+    persist();
+    render();
+  });
+  $("btnAlign").addEventListener("click", function () {
+    var lat = state.lastLat;
+    var lng = state.lastLng;
+    if (lat == null && state.demo) {
+      var p = ride.pointAt(state.m);
+      lat = p.lat; lng = p.lng;
+    }
+    if (lat == null) { toast("還沒有定位"); return; }
+    var both = ride.align(lat, lng);
+    var pick = both.out;
+    if (state.turned && both.back && (!pick || both.back.cross <= pick.cross + 20)) pick = both.back;
+    else if (both.back && pick && both.back.cross + 20 < pick.cross) pick = both.back;
+    if (!pick || pick.cross > 250) {
+      toast("離路線還有 " + (pick ? Math.round(pick.cross) : "很多") + " 公尺");
+      return;
+    }
+    state.m = pick.m;
+    state.turned = pick.m >= ride.turnM - 20;
+    state.off = false;
+    toast("已對齊到 " + km(state.m) + " km");
+    persist();
+    render();
+  });
+  $("btnReset").addEventListener("click", function () {
+    if (!confirm("清除已騎里程與移動時間？時刻表會留著。")) return;
+    state.m = 0;
+    state.turned = false;
+    state.movingMs = 0;
+    state.speedKmh = 0;
+    state.off = false;
+    state.rested = {};
+    state.restUntil = 0;
+    if (state.demo) state.virtualNow = ride.startMs;
+    toast("里程已清除");
+    persist();
+    render();
+  });
+  $("demoPause").addEventListener("click", function () {
+    state.paused = !state.paused;
+    persist();
+    render();
+  });
+
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "visible" && state.wantWake) requestWake();
+  });
+  document.addEventListener("pointerdown", function () {
+    if (state.wantWake && state.wake !== "on") requestWake();
+  }, { once: true });
+
+  if ("serviceWorker" in navigator && location.protocol !== "file:") {
+    navigator.serviceWorker.register("sw.js").catch(function () {});
+  }
+
+  load();
+  if (params.has("shot")) applyShot();
+  else if (params.has("demo")) {
+    state.demo = true;
+    state.paused = false;
+    if (state.virtualNow == null) state.virtualNow = ride.earliestMs(state.m);
+    state.gps = "demo";
+    state.accuracy = 5;
+  }
+  syncForm();
+  if (!state.demo) startGps();
+  else state.gps = "demo";
+  render();
+  requestAnimationFrame(tick);
+
+  window.__ride = ride;
+  window.__state = state;
+
+  if (params.has("selftest")) {
+    var result = RideEngine.selfTest(ride);
+    var el = $("selftest");
+    el.hidden = false;
+    el.textContent = result.logs.join("\n") + "\n" + (result.ok ? "SELFTEST PASS" : "SELFTEST FAIL");
+    document.title = result.ok ? "SELFTEST PASS" : "SELFTEST FAIL";
+  }
+})();
+</script>
+</body>
+</html>
